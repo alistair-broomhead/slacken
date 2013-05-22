@@ -1,6 +1,10 @@
-#slacken - Tools for working with REST
+=====================================
+slacken - Tools for working with REST
+=====================================
 
-##Introduction
+------------
+Introduction
+------------
 
 Contains the RESTAccess class for calling endpoints including tools for
 accessing both json and xml data. Also included are tools for accessing this
@@ -9,30 +13,44 @@ also be accessed as attributes, in javascript style - accessing a value of this
 class of type dict will return another AttrDict, however the original object is
 always accessible by calling ._as_dict() on an AttrDict object
 
-##Installation Requirements
+-------------------------
+Installation Requirements
+-------------------------
 
 The following modules are required:
 
 - None currently
 
 
-##Installation
+------------
+Installation
+------------
 
 Just run the following command at the command prompt:
 
-```bash
-$ sudo pip install slacken
-```
+.. code-block:: bash
 
-##Usage
+    $ sudo pip install slacken
 
-```python
-from slacken import RESTaccess, AccessorFromText, to_dict
-rest_accessor = RESTaccess(rest_root)
-response_data = rest_accessor(endpoint)
-```
 
-##License
+-----
+Usage
+-----
+
+.. code-block:: python
+
+    from slacken import RESTaccess, XMLAccessor, AttrDict
+    rest_accessor = RESTaccess(rest_root)
+    response_data = rest_accessor(endpoint)
+    response_dict = response_data.to_dict()\
+                        if isinstance(response_data, XMLAccessor) else\
+                    AttrDict(response_data)
+
+
+
+-------
+License
+-------
 
 The MIT License (MIT)
 
