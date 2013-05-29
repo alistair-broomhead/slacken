@@ -35,9 +35,8 @@ class RESTaccess(object):
 
     @staticmethod
     def _parse_xml(response):
-        raw = response.raw
-        from xml.dom.minidom import parse
-        dom = parse(raw)
+        from xml.dom.minidom import parseString
+        dom = parseString(response.content)
         return XMLAccessor(dom)
 
     @staticmethod
