@@ -1,5 +1,4 @@
 """ Accessors for REST endpoints """
-from urllib2 import HTTPError
 
 from slacken.xml_accessor import XMLAccessor
 
