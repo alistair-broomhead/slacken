@@ -14,26 +14,28 @@ class RESTaccess(object):
     rest_hub = ''
 
     @staticmethod
-    def _get_raw(url, params=None, credentials=None):
+    def _get_raw(url, data=None, auth=None):
+        kwargs = {}
         import requests
-        if params is None:
-            return requests.get(url, auth=credentials)
-        else:
-            return requests.post(url, data=params, auth=credentials)
+        get_rest_response = requests.get
+        if auth is not None:
+            kwargs['auth'] = auth
+        if data is not None:
+            kwargs['data'] = data
+            get_rest_response = requests.post
+        return get_rest_response(url, **kwargs)
 
     @staticmethod
     def _parse_json(raw):
-        from json import load
-        return load(raw)
+        return raw.json()
 
     @staticmethod
     def _get_json(url, params=None, credentials=None):
-        return RESTaccess._parse_json(
-            RESTaccess._get_raw(url, params, credentials)
-        )
+        return RESTaccess._get_raw(url, params, credentials).json()
 
     @staticmethod
-    def _parse_xml(raw):
+    def _parse_xml(response):
+        raw = response.raw
         from xml.dom.minidom import parse
         dom = parse(raw)
         return XMLAccessor(dom)
@@ -60,13 +62,12 @@ class RESTaccess(object):
         return '/'.join(
             (self.rest_hub.rstrip('/'), endpoint.lstrip('/'))).rstrip('/')
 
-    def auth(self,
-             username=None,
-             password=None,
-             # auth_url=None
-    ):
+    def auth(self, username=None, password=None):
         if username is None:
-            username = self._credentials["username"]
+            if "username" in self._credentials:
+                username = self._credentials["username"]
+            else:
+                return None
         if password is None and "password" in self._credentials:
             password = self._credentials["password"]
         return username, password
@@ -77,13 +78,13 @@ class RESTaccess(object):
         """
         url_ = self.url(endpoint)
         credentials = self.auth(username=username, password=password)
-        content = self._get_raw(url_, params, credentials)
-        subtype = content.headers.subtype.lower().strip()
-        assert isinstance(subtype, str)
+        response = self._get_raw(url_, params, credentials)
+        content_type = response.headers['content-type'].lower().strip()
+        assert isinstance(content_type, str)
 
-        if subtype == 'json':
-            return self._parse_json(content)
-        elif subtype == 'xml':
-            return self._parse_xml(content)
+        if 'json' in content_type:
+            return response.json()
+        elif 'xml' in content_type:
+            return self._parse_xml(response)
         else:
-            return content
+            return response.content
