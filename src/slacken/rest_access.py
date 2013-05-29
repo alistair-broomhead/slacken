@@ -21,11 +21,15 @@ class RESTaccess(object):
         if auth is not None:
             kwargs['auth'] = auth
         if data is not None:
+            #Todo: Make content-type configurable
             from json import dumps
             kwargs['data'] = dumps(data)
             kwargs['headers'] = {'content-type': 'application/json'}
             get_rest_response = requests.post
-        return get_rest_response(url, **kwargs)
+        response = get_rest_response(url, **kwargs)
+        #Todo: Make whether HTTPErrors are raised configurable
+        response.raise_for_status()
+        return response
 
     @staticmethod
     def _parse_json(raw):
