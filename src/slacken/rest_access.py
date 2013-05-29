@@ -80,6 +80,10 @@ class RESTaccess(object):
         url_ = self.url(endpoint)
         credentials = self.auth(username=username, password=password)
         response = self._get_raw(url_, params, credentials)
+
+        if not response.content:
+            return None
+
         content_type = response.headers['content-type'].lower().strip()
         assert isinstance(content_type, str)
 
