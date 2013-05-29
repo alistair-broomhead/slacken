@@ -21,7 +21,9 @@ class RESTaccess(object):
         if auth is not None:
             kwargs['auth'] = auth
         if data is not None:
-            kwargs['data'] = data
+            from json import dumps
+            kwargs['data'] = dumps(data)
+            kwargs['headers'] = {'content-type': 'application/json'}
             get_rest_response = requests.post
         return get_rest_response(url, **kwargs)
 
