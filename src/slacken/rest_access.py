@@ -1,6 +1,7 @@
 """ Accessors for REST endpoints """
 
 from slacken.xml_accessor import XMLAccessor
+import requests
 
 __author__ = 'Alistair Broomhead'
 
@@ -9,27 +10,61 @@ class RESTaccess(object):
     """
     An accessor for REST endpoints
 
-    rest_hub should be something like 'http://www.integration.moshi/services/rest'
+    rest_hub should be something like
+    'http://www.integration.moshi/services/rest'
     """
     rest_hub = ''
 
     @staticmethod
-    def _get_raw(url, data=None, auth=None):
-        kwargs = {}
-        import requests
-        get_rest_response = requests.get
+    def _do_auth(kwargs, auth):
         if auth is not None:
             kwargs['auth'] = auth
+
+    @staticmethod
+    def _do_data(kwargs, data):
         if data is not None:
             #Todo: Make content-type configurable
             from json import dumps
             kwargs['data'] = dumps(data)
             kwargs['headers'] = {'content-type': 'application/json'}
-            get_rest_response = requests.post
-        response = get_rest_response(url, **kwargs)
+
+    @staticmethod
+    def _do_raise(response):
         #Todo: Make whether HTTPErrors are raised configurable
         response.raise_for_status()
         return response
+
+    @staticmethod
+    def get(url, auth=None):
+        kwargs = {}
+        RESTaccess._do_auth(kwargs, auth)
+        return RESTaccess._do_raise(requests.get(url, **kwargs))
+
+    @staticmethod
+    def delete(url, auth=None):
+        kwargs = {}
+        RESTaccess._do_auth(kwargs, auth)
+        return RESTaccess._do_raise(requests.delete(url, **kwargs))
+
+    @staticmethod
+    def post(url, data=None, auth=None):
+        kwargs = {}
+        RESTaccess._do_auth(kwargs, auth)
+        RESTaccess._do_data(kwargs, data)
+        return RESTaccess._do_raise(requests.post(url, **kwargs))
+
+    @staticmethod
+    def put(url, data=None, auth=None):
+        kwargs = {}
+        RESTaccess._do_auth(kwargs, auth)
+        RESTaccess._do_data(kwargs, data)
+        return RESTaccess._do_raise(requests.put(url, **kwargs))
+
+    @staticmethod
+    def _get_raw(url, data=None, auth=None):
+        if data is not None:
+            return RESTaccess.post(url, data, auth)
+        return RESTaccess.get(url, auth)
 
     @staticmethod
     def _parse_json(raw):
